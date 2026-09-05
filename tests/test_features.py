@@ -74,6 +74,6 @@ def test_pipeline_single_payload():
         "phone": "9876543210",
     }
     result = p.transform_order_payload(payload)
-    assert result.shape == (1, 22)
+    assert result.shape == (1, 47)
     assert np.isfinite(result).all()
-    assert len(p.feature_names_) == 22
+    assert len(p.feature_names_) == 47

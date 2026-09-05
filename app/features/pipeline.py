@@ -9,6 +9,10 @@ from typing import Dict, Any, Optional, List
 from app.features.address import AddressCompletenessTransformer
 from app.features.ring_signals import RingSignalTransformer
 from app.features.history_signals import HistorySignalTransformer
+from app.features.ip_signals import IP_FEATURE_NAMES, ip_features
+from app.features.phone_signals import PHONE_FEATURE_NAMES, phone_features
+from app.features.time_signals import TIME_FEATURE_NAMES, time_features
+from app.features.address_intelligence import ADDRESS_INTELLIGENCE_FEATURE_NAMES, address_intelligence_features
 
 
 class FeaturePipeline:
@@ -36,6 +40,8 @@ class FeaturePipeline:
             list(self.address_transformer.feature_names_out_) +
             list(self.ring_transformer.feature_names_out_) +
             (list(self.history_transformer.feature_names_out_) if self.include_history else [])
+            + list(ADDRESS_INTELLIGENCE_FEATURE_NAMES) + list(PHONE_FEATURE_NAMES)
+            + list(IP_FEATURE_NAMES) + list(TIME_FEATURE_NAMES)
         )
         self.is_fitted = True
         return self
@@ -48,19 +54,38 @@ class FeaturePipeline:
             combined = pd.concat([addr_features, ring_features, hist_features], axis=1)
         else:
             combined = pd.concat([addr_features, ring_features], axis=1)
+        enriched = []
+        for row in X.to_dict(orient="records"):
+            enriched.append(
+                list(address_intelligence_features(row.get("address", "")).values())
+                + list(phone_features(row.get("phone", "")).values())
+                + list(ip_features(row.get("ip_address", ""), self.db_path).values())
+                + list(time_features().values())
+            )
+        enrichment = pd.DataFrame(enriched, columns=(
+            ADDRESS_INTELLIGENCE_FEATURE_NAMES + PHONE_FEATURE_NAMES
+            + IP_FEATURE_NAMES + TIME_FEATURE_NAMES
+        ), index=combined.index)
+        combined = pd.concat([combined, enrichment], axis=1)
         return combined.values.astype(np.float64)
 
-    def transform_order_payload(self,
-        payload: Dict[str, Any]) -> np.ndarray:
+    def fit_transform(self, X: pd.DataFrame, y=None) -> np.ndarray:
+        self.fit(X, y)
+        return self.transform(X)
+
+    def transform_order_payload(self, payload: Dict[str, Any], ip: str = "") -> np.ndarray:
         try:
             # Convert dict to single-row DataFrame
-            df = pd.DataFrame([payload])
+            row = dict(payload)
+            if ip:
+                row["ip_address"] = ip
+            df = pd.DataFrame([row])
             result = self.transform(df)
             return result.astype(np.float64)
         except Exception as e:
             # Safe degradation: return zeros (dim follows fitted pipeline)
             print(f"Warning: Feature extraction failed: {e}")
-            dim = len(self.feature_names_) if self.feature_names_ else 22
+            dim = len(self.feature_names_) if self.feature_names_ else 47
             return np.zeros((1, dim), dtype=np.float64)
 
     def get_feature_importance_map(self,

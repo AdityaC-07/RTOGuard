@@ -28,6 +28,8 @@ CREATE TABLE IF NOT EXISTS orders (
   risk_score INTEGER,
   decision TEXT,
   behavior_json TEXT,
+    ip_address TEXT,
+    otp_verified INTEGER DEFAULT 0,
   confirmed_rto INTEGER DEFAULT 0,
   scored_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -57,6 +59,14 @@ def init_db(db_path: Optional[str] = None) -> str:
         conn = sqlite3.connect(path, check_same_thread=False)
         try:
             conn.executescript(_SCHEMA)
+            for statement in (
+                "ALTER TABLE orders ADD COLUMN ip_address TEXT",
+                "ALTER TABLE orders ADD COLUMN otp_verified INTEGER DEFAULT 0",
+            ):
+                try:
+                    conn.execute(statement)
+                except sqlite3.OperationalError:
+                    pass
             conn.commit()
         finally:
             conn.close()
@@ -78,8 +88,9 @@ def insert_order(record: Dict[str, Any], db_path: Optional[str] = None) -> int:
         cur = conn.execute(
             """INSERT INTO orders
                (order_id, device_id, phone, pincode, address_token,
-                order_value, risk_score, decision, behavior_json, confirmed_rto)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                   order_value, risk_score, decision, behavior_json, ip_address,
+                   otp_verified, confirmed_rto)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 str(record.get("order_id", "")),
                 str(record.get("device_id", "UNKNOWN")),
@@ -90,6 +101,8 @@ def insert_order(record: Dict[str, Any], db_path: Optional[str] = None) -> int:
                 int(record.get("risk_score", 0) or 0),
                 str(record.get("decision", "APPROVE")),
                 record.get("behavior_json"),
+                str(record.get("ip_address", "")),
+                int(record.get("otp_verified", 0) or 0),
                 int(record.get("confirmed_rto", 0) or 0),
             ),
         )

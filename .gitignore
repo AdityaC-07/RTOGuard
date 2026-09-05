@@ -10,6 +10,9 @@ __pycache__/
 data/*.db
 data/*.db-journal
 
+# Trained model bundles (regenerate with: python -m eval.train_and_save)
+data/*.pkl
+
 # Node / CRA
 rtoguard-dashboard/node_modules/
 rtoguard-dashboard/build/

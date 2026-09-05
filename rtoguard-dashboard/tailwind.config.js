@@ -6,16 +6,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        beige:   { DEFAULT: '#FAF9F6', alt: '#F0EDE6' },
+        beige:   { DEFAULT: '#FFFFFF', alt: '#FFFFFF' },
         navy:    { DEFAULT: '#1A3C6E', light: '#2B5499', subtle: '#E8EEF7' },
-        ink:     { DEFAULT: '#0D0D0D', muted: '#3D3D3D' },
-        border:  '#D9D4CB',
+        ink:     { DEFAULT: '#000000', muted: '#000000' },
+        border:  '#1A3C6E',
         safe:    { DEFAULT: '#1A3C6E', bg: '#E8EEF7' },
-        caution: { DEFAULT: '#7A5C00', bg: '#FDF5DC' },
-        risk:    { DEFAULT: '#5C1A1A', bg: '#FAEAEA' },
+        caution: { DEFAULT: '#1A3C6E', bg: '#FFFFFF' },
+        risk:    { DEFAULT: '#000000', bg: '#FFFFFF' },
       },
       fontFamily: {
-        'sans': ['Inter', 'system-ui', 'sans-serif'],
+        'sans': ['Georgia', 'Times New Roman', 'serif'],
       },
     },
   },

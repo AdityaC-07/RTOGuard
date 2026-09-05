@@ -19,7 +19,7 @@ function ScoreArc({ score, color }: { score: number; color: string }) {
       <path
         d={`M ${cx - R} ${cy} A ${R} ${R} 0 0 1 ${cx + R} ${cy}`}
         fill="none"
-        stroke="#D9D4CB"
+        stroke="#1A3C6E"
         strokeWidth="6"
         strokeLinecap="round"
       />
@@ -51,6 +51,9 @@ export const ReturnRiskScorer: React.FC = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [actionResolved, setActionResolved] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [devOtp, setDevOtp] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
 
   // Phase 2 behavioural biometrics: how the form was filled (paste vs
   // typing, fill time, focus order). Bots paste everything in milliseconds.
@@ -110,12 +113,16 @@ export const ReturnRiskScorer: React.FC = () => {
     setShowDetails(false);
     setShowBreakdown(false);
     setActionResolved(false);
+    setOtp('');
+    setDevOtp('');
+    setOtpVerified(false);
     resetBehavior();
   };
 
   const handleSubmit = async () => {
     setLoading(true);
     setActionResolved(false);
+    setOtpVerified(false);
     setShowDetails(false);
     setShowBreakdown(false);
     try {
@@ -274,7 +281,7 @@ export const ReturnRiskScorer: React.FC = () => {
                           <span style={{ fontSize: 64, fontWeight: 700, lineHeight: 1, color: scoreColor(response.risk_score) }}>
                             {response.risk_score}
                           </span>
-                          <span style={{ fontSize: 16, fontWeight: 400, color: '#3D3D3D' }}>/100</span>
+                          <span style={{ fontSize: 16, fontWeight: 400, color: '#000000' }}>/100</span>
                           <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.04em', color: scoreColor(response.risk_score) }}>
                             {scoreLabel(response.risk_score)}
                           </span>
@@ -352,6 +359,35 @@ export const ReturnRiskScorer: React.FC = () => {
                         </p>
                       </div>
 
+                      {/* TODO(otp): re-enable when SMS gateway is configured.
+                          Requires: Twilio / MSG91 / Fast2SMS account + RTOGUARD_SMS_KEY env var.
+                          Backend endpoints already live: POST /v1/verify/send-otp + confirm-otp.
+
+                      {response.decision === RTODecision.REQUIRE_PREPAID && !actionResolved && (
+                        <div className="w-full border border-border bg-beige p-4 rounded space-y-3">
+                          <p className="text-xs font-semibold text-ink uppercase tracking-wider">Confirm this order</p>
+                          <p className="text-sm text-ink-muted">Ask the customer for the code before packing the order.</p>
+                          {!devOtp && !otpVerified && (
+                            <button onClick={async () => {
+                              const result = await axios.post<{ dev_otp: string }>(`${BACKEND_URL}/v1/verify/send-otp`, { phone: payload.phone });
+                              setDevOtp(result.data.dev_otp);
+                            }} className="btn-primary px-3 py-1.5 text-xs">Send verification code</button>
+                          )}
+                          {devOtp && !otpVerified && (
+                            <div className="flex flex-wrap gap-2 items-center">
+                              <input aria-label="Verification code" value={otp} onChange={(event) => setOtp(event.target.value)} maxLength={4} className="w-24 bg-white border border-border rounded px-3 py-1.5 text-sm" placeholder="4 digits" />
+                              <button onClick={async () => {
+                                const result = await axios.post<{ verified: boolean }>(`${BACKEND_URL}/v1/verify/confirm-otp`, { phone: payload.phone, otp });
+                                setOtpVerified(result.data.verified);
+                              }} className="btn-primary px-3 py-1.5 text-xs">Verify</button>
+                              <span className="text-xs text-ink-muted">Development code: {devOtp}</span>
+                            </div>
+                          )}
+                          {otpVerified && <p className="text-sm font-medium text-[#1A3C6E]">Order verified by customer.</p>}
+                        </div>
+                      )}
+                      */}
+
                       {response.decision === RTODecision.REQUIRE_PREPAID && !actionResolved && (
                         <button
                           onClick={() => setActionResolved(true)}
@@ -385,10 +421,10 @@ export const ReturnRiskScorer: React.FC = () => {
                         <table className="mt-3 w-full">
                           <thead>
                             <tr>
-                              <th style={{ fontSize: 11, fontWeight: 500, color: '#3D3D3D' }} className="text-left py-1.5 pr-4">
+                              <th style={{ fontSize: 11, fontWeight: 500, color: '#000000' }} className="text-left py-1.5 pr-4">
                                 What we checked
                               </th>
-                              <th style={{ fontSize: 11, fontWeight: 500, color: '#3D3D3D' }} className="text-left py-1.5">
+                              <th style={{ fontSize: 11, fontWeight: 500, color: '#000000' }} className="text-left py-1.5">
                                 Impact
                               </th>
                             </tr>
@@ -398,7 +434,7 @@ export const ReturnRiskScorer: React.FC = () => {
                               response.top_risk_factors.map((factor, i) => {
                                 const impact = factorImpact(factor);
                                 return (
-                                  <tr key={i} style={{ backgroundColor: i % 2 === 0 ? '#F0EDE6' : '#FAF9F6' }}>
+                                  <tr key={i} style={{ backgroundColor: '#FFFFFF' }}>
                                     <td style={{ fontSize: 13 }} className="py-2 pr-4 text-ink">
                                       {humanizeRiskFactor(factor)}
                                     </td>
@@ -406,7 +442,7 @@ export const ReturnRiskScorer: React.FC = () => {
                                       style={{
                                         fontSize: 13,
                                         fontWeight: impact === 'Low' ? 400 : 600,
-                                        color: impact === 'High' ? '#5C1A1A' : impact === 'Medium' ? '#7A5C00' : '#3D3D3D',
+                                        color: impact === 'High' ? '#000000' : '#1A3C6E',
                                       }}
                                       className="py-2 whitespace-nowrap"
                                     >
@@ -417,7 +453,7 @@ export const ReturnRiskScorer: React.FC = () => {
                               })
                             ) : (
                               <tr>
-                                <td colSpan={2} style={{ fontSize: 13, color: '#3D3D3D' }} className="py-2">
+                                <td colSpan={2} style={{ fontSize: 13, color: '#000000' }} className="py-2">
                                   No specific flags — order looks clean.
                                 </td>
                               </tr>

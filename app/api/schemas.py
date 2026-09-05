@@ -44,3 +44,4 @@ class RTOResponse(BaseModel):
     # Aliases expected by rtoguard-dashboard (RTOOrderResponse)
     model_confidence: float = 0.0
     processing_time_ms: float = 0.0
+    otp_verified: bool = False

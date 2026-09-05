@@ -150,11 +150,11 @@ export const FraudSpikeDetector: React.FC = () => {
                   <stop offset="95%" stopColor="#1A3C6E" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#D9D4CB" opacity={0.5} />
-              <XAxis dataKey="timestamp" stroke="#3D3D3D" fontSize={12} />
-              <YAxis stroke="#3D3D3D" fontSize={12} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#1A3C6E" opacity={0.5} />
+              <XAxis dataKey="timestamp" stroke="#000000" fontSize={12} />
+              <YAxis stroke="#000000" fontSize={12} />
               <Tooltip 
-                contentStyle={{ backgroundColor: '#FAF9F6', borderColor: '#D9D4CB', color: '#0D0D0D', fontSize: '12px' }}
+                contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#1A3C6E', color: '#000000', fontSize: '12px' }}
               />
               <Area
                 type="monotone"

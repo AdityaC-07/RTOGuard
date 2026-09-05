@@ -7,6 +7,8 @@ there is no history (day-1 cold start) or the DB is unreachable.
 
 import numpy as np
 import pandas as pd
+import os
+import sqlite3
 from sklearn.base import BaseEstimator, TransformerMixin
 from typing import Any, Dict, List, Optional
 
@@ -71,6 +73,15 @@ class HistorySignalTransformer(BaseEstimator, TransformerMixin):
     def transform(self, X: Any, y: Any = None) -> pd.DataFrame:
         if not self.feature_names_out_:
             self.fit()
+        if self._database_is_empty():
+            try:
+                row_count = len(X)
+            except Exception:
+                row_count = 1
+            return pd.DataFrame(
+                np.zeros((row_count, len(HISTORY_FEATURE_NAMES))),
+                columns=self.feature_names_out_,
+            ).astype(np.float64)
         try:
             if isinstance(X, pd.DataFrame):
                 records = X.to_dict(orient="records")
@@ -92,3 +103,15 @@ class HistorySignalTransformer(BaseEstimator, TransformerMixin):
         return pd.DataFrame(features, columns=self.feature_names_out_).astype(
             np.float64
         )
+
+    def _database_is_empty(self) -> bool:
+        if not self.db_path:
+            return False
+        if not os.path.exists(self.db_path):
+            return True
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                row = conn.execute("SELECT COUNT(*) FROM orders").fetchone()
+            return not row or int(row[0] or 0) == 0
+        except Exception:
+            return False

@@ -35,6 +35,7 @@ export interface RTOOrderResponse {
   model_confidence: number; // 0-1
   degraded_mode: boolean;
   processing_time_ms: number;
+  otp_verified?: boolean;
 }
 
 export interface FormBehavior {

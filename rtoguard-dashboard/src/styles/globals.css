@@ -4,27 +4,27 @@
 
 :root {
   /* Primary — surfaces, backgrounds, cards */
-  --color-primary:     #FAF9F6;   /* warm off-white / beige */
-  --color-primary-alt: #F0EDE6;   /* slightly deeper beige for card fills */
+  --color-primary:     #FFFFFF;
+  --color-primary-alt: #FFFFFF;
 
   /* Secondary — interactive, brand, CTAs */
   --color-secondary:        #1A3C6E;   /* rush blue (deep navy) */
-  --color-secondary-light:  #2B5499;   /* hover state, active ring */
+  --color-secondary-light:  #2B5499;
   --color-secondary-subtle: #E8EEF7;   /* blue-tinted background for callouts */
 
   /* Tertiary — text, borders, icons */
-  --color-text-primary:   #0D0D0D;   /* near-black body text */
-  --color-text-secondary: #3D3D3D;   /* supporting copy */
-  --color-border:         #D9D4CB;   /* subtle divider, input borders */
+  --color-text-primary:   #000000;
+  --color-text-secondary: #000000;
+  --color-border:         #1A3C6E;
 
   /* Semantic overlays — keep minimal, still on-palette */
   --color-safe:    #1A3C6E;   /* blue for APPROVE decisions */
-  --color-caution: #7A5C00;   /* dark amber text on beige — REQUIRE_PREPAID */
-  --color-risk:    #5C1A1A;   /* dark red text on beige — FLAG_FOR_REVIEW */
+  --color-caution: #1A3C6E;
+  --color-risk:    #000000;
 
   --color-safe-bg:    #E8EEF7;
-  --color-caution-bg: #FDF5DC;
-  --color-risk-bg:    #FAEAEA;
+  --color-caution-bg: #FFFFFF;
+  --color-risk-bg:    #FFFFFF;
 }
 
 * {
@@ -36,9 +36,15 @@
 html, body {
   background-color: var(--color-primary);
   color: var(--color-text-primary);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 16px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
+
+.text-xs { font-size: 0.8125rem; }
+.text-sm { font-size: 0.9375rem; }
+.text-base { font-size: 1.0625rem; }
 
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
@@ -69,7 +75,7 @@ html, body {
 /* Buttons */
 .btn-primary {
   background-color: var(--color-secondary);
-  color: #FAF9F6;
+  color: #FFFFFF;
   border-radius: 6px;
   font-weight: 500;
   transition: background-color 0.2s ease;

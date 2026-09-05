@@ -9,6 +9,13 @@ const RISK_FACTOR_COPY: Record<string, string> = {
   char_len:                        "The delivery address is too short to be valid.",
   completeness_score:              "The delivery address looks incomplete.",
   has_house_num:                   "No house or flat number in the address.",
+  ip_is_vpn:                        "Order placed through a VPN — delivery address may not match actual location.",
+  ip_country_mismatch:              "Order came from outside India but is for an Indian address.",
+  ip_isp_is_datacenter:             "Order came from a cloud server, not a real customer device.",
+  ip_distinct_phones_24h:           "This IP address was used to place orders with many different phone numbers.",
+  phone_digit_entropy:              "Phone number looks computer-generated, not real.",
+  phone_sequential_digits:          "Phone number contains an obvious repeating pattern.",
+  order_is_late_night:              "Order was placed late at night, when fraud activity peaks.",
   // Phase 2 history signals arrive as full sentences from the backend;
   // map them to themselves so they render verbatim in the verdict card.
   "This device has been used with many different phone numbers recently.":
@@ -77,20 +84,23 @@ export function scoreLabel(score: number): string {
 }
 
 export function scoreColor(score: number): string {
-  if (score < 40) return "#1A3C6E"; // safe — navy
-  if (score < 70) return "#7A5C00"; // caution — amber
-  return "#5C1A1A";                 // risk — dark red
+  if (score < 70) return "#1A3C6E";
+  return "#000000";
 }
 
 export function scoreBg(score: number): string {
-  if (score < 40) return "#E8EEF7";
-  if (score < 70) return "#FDF5DC";
-  return "#FAEAEA";
+  return score < 70 ? "#E8EEF7" : "#FFFFFF";
 }
 
 export function factorImpact(key: string): "High" | "Medium" | "Low" {
-  const HIGH = ["pincode_rto_ratio", "phone_is_ring_prefix", "is_high_value_suspicious"];
-  const MEDIUM = ["device_multi_address_count", "order_value_vs_pincode_avg_ratio"];
+  const HIGH = [
+    "pincode_rto_ratio", "phone_is_ring_prefix", "is_high_value_suspicious",
+    "ip_is_vpn", "ip_country_mismatch", "ip_isp_is_datacenter",
+  ];
+  const MEDIUM = [
+    "device_multi_address_count", "order_value_vs_pincode_avg_ratio",
+    "phone_digit_entropy", "ip_distinct_phones_24h",
+  ];
   return HIGH.includes(key) ? "High" : MEDIUM.includes(key) ? "Medium" : "Low";
 }
 
