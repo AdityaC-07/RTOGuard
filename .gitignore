@@ -1,0 +1,23 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+
+# Runtime data (SQLite history store is created on first run)
+data/*.db
+data/*.db-journal
+
+# Node / CRA
+rtoguard-dashboard/node_modules/
+rtoguard-dashboard/build/
+rtoguard-dashboard/.env.local
+npm-debug.log*
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

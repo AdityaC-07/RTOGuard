@@ -1,0 +1,93 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+:root {
+  /* Primary — surfaces, backgrounds, cards */
+  --color-primary:     #FAF9F6;   /* warm off-white / beige */
+  --color-primary-alt: #F0EDE6;   /* slightly deeper beige for card fills */
+
+  /* Secondary — interactive, brand, CTAs */
+  --color-secondary:        #1A3C6E;   /* rush blue (deep navy) */
+  --color-secondary-light:  #2B5499;   /* hover state, active ring */
+  --color-secondary-subtle: #E8EEF7;   /* blue-tinted background for callouts */
+
+  /* Tertiary — text, borders, icons */
+  --color-text-primary:   #0D0D0D;   /* near-black body text */
+  --color-text-secondary: #3D3D3D;   /* supporting copy */
+  --color-border:         #D9D4CB;   /* subtle divider, input borders */
+
+  /* Semantic overlays — keep minimal, still on-palette */
+  --color-safe:    #1A3C6E;   /* blue for APPROVE decisions */
+  --color-caution: #7A5C00;   /* dark amber text on beige — REQUIRE_PREPAID */
+  --color-risk:    #5C1A1A;   /* dark red text on beige — FLAG_FOR_REVIEW */
+
+  --color-safe-bg:    #E8EEF7;
+  --color-caution-bg: #FDF5DC;
+  --color-risk-bg:    #FAEAEA;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  background-color: var(--color-primary);
+  color: var(--color-text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* Card Base Styling */
+.merchant-card {
+  background-color: var(--color-primary-alt);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--color-secondary);
+  color: #FAF9F6;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-secondary-light);
+}
+
+.btn-destructive-outline {
+  border: 1.5px solid var(--color-risk);
+  color: var(--color-risk);
+  background-color: transparent;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn-destructive-outline:hover {
+  background-color: var(--color-risk-bg);
+}

@@ -1,0 +1,44 @@
+# RTOGuard - System Rules & Constraints
+- Language: Python 3.11+
+- Frameworks: FastAPI, Pydantic v2, XGBoost, Scikit-learn, Redis, Pytest
+- Domain Logic:
+  - C_FN (Missed RTO Fraud Cost) = 1200 INR
+  - C_FP (False Alarm Customer Friction Cost) = 400 INR
+  - Cost Ratio (C_FN / C_FP) = 3.0
+- Code Standards:
+  - Strictly use type hints (`from typing import Optional, Dict, List, Tuple`).
+  - Use Pydantic v2 `BaseModel` for all API schemas.
+  - Zero unhandled exceptions: All feature transformers and external calls MUST degrade gracefully to neutral default values on missing or malformed data.
+  - Never throw 500 internal server errors from API endpoints; fall back to safe default decisions.
+
+# Project Structure (create exactly this layout)
+rtoguard/
+├── .cursorrules
+├── requirements.txt
+├── eval/
+│   ├── __init__.py
+│   ├── generate_data.py
+│   └── metrics.py
+├── app/
+│   ├── __init__.py
+│   ├── features/
+│   │   ├── __init__.py
+│   │   ├── address.py
+│   │   ├── ring_signals.py
+│   │   └── pipeline.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── custom_obj.py
+│   │   └── scorer.py
+│   ├── core/
+│   │   ├── __init__.py
+│   │   └── guardrails.py
+│   └── api/
+│       ├── __init__.py
+│       ├── schemas.py
+│       └── routes.py
+└── tests/
+    ├── __init__.py
+    ├── test_features.py
+    ├── test_scorer.py
+    └── test_api.py
