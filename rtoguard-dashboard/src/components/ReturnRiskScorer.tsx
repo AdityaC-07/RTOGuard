@@ -36,6 +36,77 @@ function ScoreArc({ score, color }: { score: number; color: string }) {
   );
 }
 
+type ExplainabilityItem = {
+  signal: string;
+  evidence: string;
+  meaning: string;
+  impact: 'High' | 'Medium' | 'Low';
+};
+
+function getExplainabilityItems(
+  response: RTOOrderResponse,
+  order: OrderPayload,
+): ExplainabilityItem[] {
+  const items: ExplainabilityItem[] = [];
+  const address = order.address.trim();
+  const digits = order.phone.replace(/\D/g, '').slice(-10);
+  const hasSequence = /(?:0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|3210)/.test(digits);
+
+  if (address.length < 20) {
+    items.push({
+      signal: 'Address completeness',
+      evidence: `Only ${address.length} characters were provided.`,
+      meaning: 'Short or incomplete delivery details increase the chance of failed delivery and return.',
+      impact: 'High',
+    });
+  }
+  if (order.order_value >= 3000) {
+    items.push({
+      signal: 'Order value',
+      evidence: `The order value is ₹${order.order_value.toLocaleString('en-IN')}.`,
+      meaning: 'A higher-value COD order creates more exposure if the customer refuses delivery.',
+      impact: 'Medium',
+    });
+  }
+  if (hasSequence || new Set(digits).size <= 2) {
+    items.push({
+      signal: 'Phone pattern',
+      evidence: 'The phone number contains a repeated or sequential digit pattern.',
+      meaning: 'This can indicate a generated or low-quality contact number that is harder to verify.',
+      impact: 'Medium',
+    });
+  }
+  if (response.top_risk_factors.some((factor) => factor.toLowerCase().includes('device'))) {
+    items.push({
+      signal: 'Device history',
+      evidence: 'The device has appeared in a cross-order risk signal.',
+      meaning: 'Repeated device behaviour can connect apparently different customers to the same operator.',
+      impact: 'High',
+    });
+  }
+  if (response.top_risk_factors.some((factor) => factor.toLowerCase().includes('pincode'))) {
+    items.push({
+      signal: 'PIN code history',
+      evidence: 'This delivery area has an elevated return pattern in the model signals.',
+      meaning: 'The area signal raises the expected chance of an unsuccessful COD delivery.',
+      impact: 'Medium',
+    });
+  }
+  if (items.length === 0) {
+    items.push({
+      signal: response.decision === RTODecision.APPROVE ? 'No material warning found' : 'Model ensemble signal',
+      evidence: response.decision === RTODecision.APPROVE
+        ? 'The submitted order passed the available checks.'
+        : 'Several low-level signals combined into the current risk score.',
+      meaning: response.decision === RTODecision.APPROVE
+        ? 'The order can proceed under the current evidence.'
+        : 'The score should be treated as a review prompt, not proof of fraud.',
+      impact: 'Low',
+    });
+  }
+  return items.slice(0, 4);
+}
+
 export const ReturnRiskScorer: React.FC = () => {
   const [payload, setPayload] = useState<OrderPayload>({
     order_id: 'ORD-98241',
@@ -51,9 +122,6 @@ export const ReturnRiskScorer: React.FC = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [actionResolved, setActionResolved] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [devOtp, setDevOtp] = useState('');
-  const [otpVerified, setOtpVerified] = useState(false);
 
   // Phase 2 behavioural biometrics: how the form was filled (paste vs
   // typing, fill time, focus order). Bots paste everything in milliseconds.
@@ -113,16 +181,12 @@ export const ReturnRiskScorer: React.FC = () => {
     setShowDetails(false);
     setShowBreakdown(false);
     setActionResolved(false);
-    setOtp('');
-    setDevOtp('');
-    setOtpVerified(false);
     resetBehavior();
   };
 
   const handleSubmit = async () => {
     setLoading(true);
     setActionResolved(false);
-    setOtpVerified(false);
     setShowDetails(false);
     setShowBreakdown(false);
     try {
@@ -268,6 +332,7 @@ export const ReturnRiskScorer: React.FC = () => {
                 const verdict = getVerdictDetails(response.decision);
                 const confidenceLabel = getConfidenceLabel(response.model_confidence);
                 const primaryRiskSentence = humanizeRiskFactor(response.top_risk_factors[0] || '');
+                const explainabilityItems = getExplainabilityItems(response, payload);
 
                 return (
                   <div className="space-y-6">
@@ -346,6 +411,32 @@ export const ReturnRiskScorer: React.FC = () => {
                           )}
                         </div>
                       )}
+                    </div>
+
+                    {/* Explainable AI — evidence, meaning, and action context. */}
+                    <div className="border border-navy/30 bg-white p-5 rounded space-y-4">
+                      <div>
+                        <p className="text-base font-semibold text-ink">Why this order is risky</p>
+                        <p className="text-sm text-ink-muted mt-1">
+                          These are the specific signals behind the recommendation. They indicate risk; they do not establish fraud by themselves.
+                        </p>
+                      </div>
+                      <div className="space-y-3">
+                        {explainabilityItems.map((item) => (
+                          <div key={`${item.signal}-${item.evidence}`} className="border-t border-border pt-3 first:border-t-0 first:pt-0">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <p className="text-sm font-semibold text-ink">{item.signal}</p>
+                              <span className="text-xs font-semibold text-navy border border-navy/30 rounded px-2 py-1">{item.impact} impact</span>
+                            </div>
+                            <p className="text-sm text-ink mt-1">Evidence: {item.evidence}</p>
+                            <p className="text-sm text-ink-muted mt-1">Why it matters: {item.meaning}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="border-t border-border pt-3">
+                        <p className="text-sm font-semibold text-ink">Recommended next step</p>
+                        <p className="text-sm text-ink-muted mt-1">{verdict.actionText}</p>
+                      </div>
                     </div>
 
                     {/* Zone C — What to do next (action bar) */}
